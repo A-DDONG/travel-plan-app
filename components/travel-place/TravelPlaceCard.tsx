@@ -4,7 +4,15 @@ import { TravelPlace, PlaceCategory } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Star, Pencil, Trash2, CheckCircle2, Circle } from "lucide-react";
+import {
+  MapPin,
+  Calendar,
+  Star,
+  Pencil,
+  Trash2,
+  CheckCircle2,
+  Circle,
+} from "lucide-react";
 
 const categoryColors: Record<PlaceCategory, string> = {
   식당: "bg-orange-100 text-orange-700",
@@ -22,7 +30,12 @@ interface TravelPlaceCardProps {
   onToggleVisited: (id: string, isVisited: boolean) => void;
 }
 
-export function TravelPlaceCard({ place, onEdit, onDelete, onToggleVisited }: TravelPlaceCardProps) {
+export function TravelPlaceCard({
+  place,
+  onEdit,
+  onDelete,
+  onToggleVisited,
+}: TravelPlaceCardProps) {
   return (
     <Card className={`transition-all ${place.isVisited ? "opacity-60" : ""}`}>
       <CardContent className="p-4">
@@ -40,14 +53,18 @@ export function TravelPlaceCard({ place, onEdit, onDelete, onToggleVisited }: Tr
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-sm">{place.name}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${categoryColors[place.category]}`}>
+              <span className="text-sm font-medium text-gray-900">
+                {place.name}
+              </span>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-medium ${categoryColors[place.category]}`}
+              >
                 {place.category}
               </span>
               {place.isVisited && <Badge variant="success">방문 완료</Badge>}
             </div>
 
-            <div className="mt-1.5 space-y-1 text-xs text-gray-500">
+            <div className="mt-1.5 space-y-1 text-xs text-gray-600">
               {place.address && (
                 <div className="flex items-center gap-1">
                   <MapPin className="h-3 w-3" />
@@ -66,15 +83,27 @@ export function TravelPlaceCard({ place, onEdit, onDelete, onToggleVisited }: Tr
                   </div>
                 )}
               </div>
-              {place.memo && <p className="text-gray-400 truncate">{place.memo}</p>}
+              {place.memo && (
+                <p className="truncate text-gray-500">{place.memo}</p>
+              )}
             </div>
           </div>
 
           <div className="flex gap-1 shrink-0">
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => onEdit(place)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7"
+              onClick={() => onEdit(place)}
+            >
               <Pencil className="h-3.5 w-3.5" />
             </Button>
-            <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => onDelete(place.id)}>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-7 w-7 text-red-400 hover:text-red-600"
+              onClick={() => onDelete(place.id)}
+            >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
