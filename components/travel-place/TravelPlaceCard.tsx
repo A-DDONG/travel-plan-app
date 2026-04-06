@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { TravelPlace, PlaceCategory } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ interface TravelPlaceCardProps {
   place: TravelPlace;
   onEdit: (place: TravelPlace) => void;
   onDelete: (id: string) => void;
-  onToggleVisited: (id: string, isVisited: boolean) => void;
+  onToggleVisited: (id: string, isVisited: boolean) => Promise<void>;
 }
 
 export function TravelPlaceCard({
@@ -36,14 +37,31 @@ export function TravelPlaceCard({
   onDelete,
   onToggleVisited,
 }: TravelPlaceCardProps) {
+  const [isUpdatingVisited, setIsUpdatingVisited] = useState(false);
+
+  const handleToggleVisited = async () => {
+    if (isUpdatingVisited) return;
+
+    setIsUpdatingVisited(true);
+
+    try {
+      await onToggleVisited(place.id, !place.isVisited);
+    } finally {
+      setIsUpdatingVisited(false);
+    }
+  };
+
   return (
     <Card className={`transition-all ${place.isVisited ? "opacity-60" : ""}`}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <button
-            onClick={() => onToggleVisited(place.id, !place.isVisited)}
-            className="mt-0.5 shrink-0 text-gray-400 transition-all duration-150 active:scale-90 hover:text-green-500"
+            type="button"
+            onClick={handleToggleVisited}
+            disabled={isUpdatingVisited}
+            className="mt-0.5 shrink-0 text-gray-400 transition-all duration-150 active:scale-90 hover:text-green-500 disabled:cursor-not-allowed disabled:opacity-60"
             aria-label={place.isVisited ? "방문 완료 해제" : "방문 완료 체크"}
+            aria-busy={isUpdatingVisited}
           >
             {place.isVisited ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />
