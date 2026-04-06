@@ -5,6 +5,8 @@ interface TravelStore {
   plans: TravelPlan[];
   selectedPlan: TravelPlan | null;
   isLoading: boolean;
+  hasFetchedPlans: boolean;
+  hasFetchedSelectedPlan: boolean;
 
   // Travel Plan actions
   fetchPlans: () => Promise<void>;
@@ -25,19 +27,41 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   plans: [],
   selectedPlan: null,
   isLoading: false,
+  hasFetchedPlans: false,
+  hasFetchedSelectedPlan: false,
 
   fetchPlans: async () => {
     set({ isLoading: true });
-    const res = await fetch("/api/travel-plans");
-    const data: TravelPlan[] = await res.json();
-    set({ plans: data, isLoading: false });
+
+    try {
+      const res = await fetch("/api/travel-plans");
+
+      if (!res.ok) {
+        throw new Error("여행 계획을 불러오지 못했습니다.");
+      }
+
+      const data: TravelPlan[] = await res.json();
+      set({ plans: data, isLoading: false, hasFetchedPlans: true });
+    } catch {
+      set({ plans: [], isLoading: false, hasFetchedPlans: true });
+    }
   },
 
   fetchPlan: async (id: string) => {
-    set({ isLoading: true });
-    const res = await fetch(`/api/travel-plans/${id}`);
-    const data: TravelPlan = await res.json();
-    set({ selectedPlan: data, isLoading: false });
+    set({ isLoading: true, selectedPlan: null, hasFetchedSelectedPlan: false });
+
+    try {
+      const res = await fetch(`/api/travel-plans/${id}`);
+
+      if (!res.ok) {
+        throw new Error("여행 계획을 찾을 수 없습니다.");
+      }
+
+      const data: TravelPlan = await res.json();
+      set({ selectedPlan: data, isLoading: false, hasFetchedSelectedPlan: true });
+    } catch {
+      set({ selectedPlan: null, isLoading: false, hasFetchedSelectedPlan: true });
+    }
   },
 
   createPlan: async (data: CreateTravelPlanInput) => {
