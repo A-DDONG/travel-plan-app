@@ -42,7 +42,8 @@ export function TravelPlaceCard({
         <div className="flex items-start gap-3">
           <button
             onClick={() => onToggleVisited(place.id, !place.isVisited)}
-            className="mt-0.5 text-gray-400 hover:text-green-500 transition-colors shrink-0"
+            className="mt-0.5 shrink-0 text-gray-400 transition-all duration-150 active:scale-90 hover:text-green-500"
+            aria-label={place.isVisited ? "방문 완료 해제" : "방문 완료 체크"}
           >
             {place.isVisited ? (
               <CheckCircle2 className="h-5 w-5 text-green-500" />

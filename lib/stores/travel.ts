@@ -1,6 +1,33 @@
 import { create } from "zustand";
 import { TravelPlan, TravelPlace, CreateTravelPlanInput, UpdateTravelPlanInput, CreateTravelPlaceInput, UpdateTravelPlaceInput } from "@/types";
 
+function replacePlaceInPlans(plans: TravelPlan[], planId: string, placeId: string, updater: (place: TravelPlace) => TravelPlace) {
+  return plans.map((plan) =>
+    plan.id === planId
+      ? {
+          ...plan,
+          places: plan.places.map((place) => (place.id === placeId ? updater(place) : place)),
+        }
+      : plan,
+  );
+}
+
+function replacePlaceInSelectedPlan(
+  selectedPlan: TravelPlan | null,
+  planId: string,
+  placeId: string,
+  updater: (place: TravelPlace) => TravelPlace,
+) {
+  if (!selectedPlan || selectedPlan.id !== planId) {
+    return selectedPlan;
+  }
+
+  return {
+    ...selectedPlan,
+    places: selectedPlan.places.map((place) => (place.id === placeId ? updater(place) : place)),
+  };
+}
+
 interface TravelStore {
   plans: TravelPlan[];
   selectedPlan: TravelPlan | null;
@@ -138,6 +165,33 @@ export const useTravelStore = create<TravelStore>((set, get) => ({
   },
 
   toggleVisited: async (planId: string, placeId: string, isVisited: boolean) => {
-    await get().updatePlace(planId, placeId, { isVisited });
+    const previousPlans = get().plans;
+    const previousSelectedPlan = get().selectedPlan;
+
+    set((state) => ({
+      plans: replacePlaceInPlans(state.plans, planId, placeId, (place) => ({ ...place, isVisited })),
+      selectedPlan: replacePlaceInSelectedPlan(state.selectedPlan, planId, placeId, (place) => ({ ...place, isVisited })),
+    }));
+
+    try {
+      const res = await fetch(`/api/travel-plans/${planId}/places/${placeId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isVisited }),
+      });
+
+      if (!res.ok) {
+        throw new Error("방문 상태를 변경하지 못했습니다.");
+      }
+
+      const updated: TravelPlace = await res.json();
+
+      set((state) => ({
+        plans: replacePlaceInPlans(state.plans, planId, placeId, () => updated),
+        selectedPlan: replacePlaceInSelectedPlan(state.selectedPlan, planId, placeId, () => updated),
+      }));
+    } catch {
+      set({ plans: previousPlans, selectedPlan: previousSelectedPlan });
+    }
   },
 }));
